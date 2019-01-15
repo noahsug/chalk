@@ -1,0 +1,10 @@
+{
+  "env": {
+    "production": {
+      "presets": ["@babel/preset-env"],
+    },
+    "test": {
+      "presets": ["airbnb"]
+    }
+  }
+}

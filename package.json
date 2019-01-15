@@ -1,0 +1,62 @@
+{
+  "name": "jade",
+  "version": "0.0.0",
+  "description": "draw tower defense",
+  "scripts": {
+    "build": "NODE_ENV=production webpack -p --progress",
+    "build:dev": "webpack -d --progress",
+    "start": "npm run build:dev && webpack-dev-server --content-base dist",
+    "deploy": "npm run build && gh-pages-deploy",
+    "test": "BABEL_ENV=test jest",
+    "lint": "eslint --quiet . --ext=.js"
+  },
+  "author": "Noah Sugarman <noahsug@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:noahsug/jade"
+  },
+  "bugs": {
+    "url": "https://github.com/noahsug/jade/issues"
+  },
+  "homepage": "https://github.com/noahsug/jade#readme",
+  "gh-pages-deploy": {
+    "staticpath": "dist",
+    "noprompt": true
+  },
+  "keywords": [],
+  "dependencies": {
+    "debounce": "^1.2.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.2.3",
+    "babel-cli": "^6.26.0",
+    "babel-loader": "^8.0.5",
+    "babel-preset-airbnb": "^2.4.0",
+    "copy-webpack-plugin": "^4.6.0",
+    "css-loader": "^2.1.0",
+    "eslint": "^5.11.1",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-prettier": "^3.3.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jest": "^22.1.2",
+    "eslint-plugin-jsx-a11y": "^6.1.2",
+    "eslint-plugin-prettier": "^3.0.1",
+    "eslint-plugin-react": "^7.12.2",
+    "extract-text-webpack-plugin": "^4.0.0-beta.0",
+    "gh-pages-deploy": "^0.5.0",
+    "jest": "^23.6.0",
+    "mini-css-extract-plugin": "^0.5.0",
+    "optimize-css-assets-webpack-plugin": "^5.0.1",
+    "prettier": "^1.15.3",
+    "style-loader": "^0.23.1",
+    "webpack": "^4.28.4",
+    "webpack-cli": "^3.2.1",
+    "webpack-dev-server": "^3.1.14"
+  },
+  "jest": {
+    "watchPathIgnorePatterns": [
+      "<rootDir>/dist"
+    ]
+  }
+}
