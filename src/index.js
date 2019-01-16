@@ -23,6 +23,7 @@ let lastClick = 0;
 const linesToReplay = decode(window.location.hash, canvas);
 let replaying = true;
 let hash = window.location.hash;
+let updateHashInterval = 0;
 
 let nextAction = 0;
 
@@ -51,6 +52,7 @@ const onClick = () => {
   const dblClickTime = Date.now() - lastClick;
   lastClick = Date.now();
   if (dblClickTime < 300) {
+    clearInterval(updateHashInterval);
     window.location.hash = '';
     location.reload();
   }
@@ -108,7 +110,7 @@ function listenToInput() {
   canvas.addEventListener('touchmove', withTouch(drawLine));
   canvas.addEventListener('touchend', withTouch(stopDrawing));
 
-  setInterval(() => {
+  updateHashInterval = setInterval(() => {
     window.location.hash = encode(lines, canvas);
     hash = window.location.hash;
   }, 300);
