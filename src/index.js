@@ -1,5 +1,6 @@
-import './style.css';
 import debounce from 'debounce';
+import './style.css';
+import { encode, decode } from './encoder';
 
 const lineWidth = 8;
 const fillWidth = 20;
@@ -29,23 +30,35 @@ let x = 0;
 let y = 0;
 let isMouseDown = false;
 let line = [];
+let lastClick = 0;
 
 const stopDrawing = () => {
   if (isMouseDown) {
     isMouseDown = false;
-    if (line.length === 1) line.push(line[0]);
+    if (line.length === 1) {
+      line.push(line[0]);
+
+      const dblClickTime = Date.now() - lastClick;
+      lastClick = Date.now();
+      if (dblClickTime < 300) {
+        lines.length = [];
+        line = [];
+        ctx.save();
+        ctx.fillStyle = 'rgba(33, 33, 33, 1)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }
+    }
   }
 };
-const startDrawing = (event) => {
+const startDrawing = (newX, newY) => {
   isMouseDown = true;
-  [x, y] = [event.offsetX, event.offsetY];
+  [x, y] = [newX, newY];
   line = [[x, y]];
   lines.push(line);
 };
-const drawLine = (event) => {
+const drawLine = (newX, newY) => {
   if (isMouseDown) {
-    const newX = event.offsetX;
-    const newY = event.offsetY;
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(newX, newY);
@@ -55,24 +68,65 @@ const drawLine = (event) => {
   }
 };
 
+function withMouse(fn) {
+  return (e) => {
+    const { offsetX, offsetY } = e;
+    fn(offsetX, offsetY);
+  };
+}
+
 function withTouch(fn) {
   return (e) => {
     e.preventDefault();
     const { pageX, pageY } = e.changedTouches[0];
-    fn({ offsetX: pageX, offsetY: pageY });
+    fn(pageX, pageY);
   };
 }
 
-canvas.addEventListener('mousedown', startDrawing);
-canvas.addEventListener('mousemove', drawLine);
-canvas.addEventListener('mouseup', stopDrawing);
-canvas.addEventListener('mouseout', stopDrawing);
-canvas.addEventListener('touchstart', withTouch(startDrawing));
-canvas.addEventListener('touchmove', withTouch(drawLine));
-canvas.addEventListener('touchend', withTouch(stopDrawing));
+const linesToReplay = decode(window.location.hash);
+let replaying = true;
+
+function listenToInput() {
+  canvas.addEventListener('mousedown', withMouse(startDrawing));
+  canvas.addEventListener('mousemove', withMouse(drawLine));
+  canvas.addEventListener('mouseup', stopDrawing);
+  canvas.addEventListener('mouseout', stopDrawing);
+  canvas.addEventListener('touchstart', withTouch(startDrawing));
+  canvas.addEventListener('touchmove', withTouch(drawLine));
+  canvas.addEventListener('touchend', withTouch(stopDrawing));
+}
+
+let nextAction = 0;
+function replayLines() {
+  if (!replaying) return;
+  if (linesToReplay.length === 0) {
+    replaying = false;
+    listenToInput();
+    return;
+  }
+
+  nextAction -= 1;
+  if (nextAction > 0) return;
+
+  const [x, y] = linesToReplay[0].shift();
+  if (isMouseDown) {
+    drawLine(x, y);
+  } else {
+    startDrawing(x, y);
+  }
+  nextAction = 1;
+
+  if (linesToReplay[0].length === 0) {
+    linesToReplay.shift();
+    stopDrawing();
+    nextAction = 12;
+  }
+}
 
 window.requestAnimationFrame(draw);
 function draw() {
+  replayLines();
+
   ctx.save();
   ctx.fillStyle = 'rgba(33, 33, 33, 0.01)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -97,3 +151,7 @@ function draw() {
 
   window.requestAnimationFrame(draw);
 }
+
+setInterval(() => {
+  window.location.hash = encode(lines);
+}, 200);

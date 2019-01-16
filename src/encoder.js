@@ -1,3 +1,22 @@
+export function encode(lines) {
+  if (lines.length === 0) return '';
+  return JSON.stringify(lines)
+    .replace(/\[/g, 'a')
+    .replace(/\]/g, 'b')
+    .replace(/,/g, 'c');
+}
+
+export function decode(str) {
+  if (str.length <= 1) return [];
+  return JSON.parse(
+    str
+      .slice(1)
+      .replace(/a/g, '[')
+      .replace(/b/g, ']')
+      .replace(/c/g, ','),
+  );
+}
+
 const alphabet = [
   'a',
   'b',
@@ -67,37 +86,37 @@ const alphabet = [
   '~',
 ];
 
-export function encode(lines) {
-  const [x, y] = lines[0];
-  let base10 = (x << 7) + y;
-  let result = '';
-  while (base10 > 0) {
-    const charValue = base10 % alphabet.length;
-    result = alphabet[charValue] + result;
-    base10 = (base10 - charValue) / alphabet.length;
-  }
-  return result;
-}
-
-export function decode(str) {
-  let base10 = 0;
-  for (let i = 0; i < str.length; i++) {
-    base10 += alphabet.indexOf(str[str.length - 1 - i]) * Math.pow(alphabet.length, i);
-  }
-
-  console.log(base10);
-
-  const result = [];
-  while (base10 > 0) {
-    const y = base10 & 127;
-    base10 >>>= 7;
-    const x = base10 & 127;
-    base10 >>>= 7;
-    result.unshift([x, y]);
-  }
-  return result;
-}
-
+// export function encode(lines) {
+//   const [x, y] = lines[0];
+//   let base10 = (x << 7) + y;
+//   let result = '';
+//   while (base10 > 0) {
+//     const charValue = base10 % alphabet.length;
+//     result = alphabet[charValue] + result;
+//     base10 = (base10 - charValue) / alphabet.length;
+//   }
+//   return result;
+// }
+//
+// export function decode(str) {
+//   let base10 = 0;
+//   for (let i = 0; i < str.length; i++) {
+//     base10 += alphabet.indexOf(str[str.length - 1 - i]) * Math.pow(alphabet.length, i);
+//   }
+//
+//   console.log(base10);
+//
+//   const result = [];
+//   while (base10 > 0) {
+//     const y = base10 & 127;
+//     base10 >>>= 7;
+//     const x = base10 & 127;
+//     base10 >>>= 7;
+//     result.unshift([x, y]);
+//   }
+//   return result;
+// }
+//
 // function encode() {
 //   const { width, height } = canvas;
 //   const maxSize = encodedLines.reduce(
