@@ -10,19 +10,7 @@ const root = document.querySelector('.app');
 const canvas = document.createElement('canvas');
 root.appendChild(canvas);
 const ctx = canvas.getContext('2d');
-resize();
-
-window.addEventListener('resize', debounce(resize));
-
-function resize() {
-  canvas.width = document.body.clientWidth;
-  canvas.height = document.body.clientHeight;
-  ctx.lineCap = 'round';
-  ctx.lineWidth = lineWidth;
-  ctx.strokeStyle = 'orange';
-  ctx.fillStyle = 'rgba(33, 33, 33, 1)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-}
+init();
 
 const lines = [];
 
@@ -37,6 +25,26 @@ let replaying = true;
 let hash = window.location.hash;
 
 let nextAction = 0;
+
+window.addEventListener('resize', debounce(resize));
+
+function init() {
+  canvas.width = document.body.clientWidth;
+  canvas.height = document.body.clientHeight;
+  ctx.lineCap = 'round';
+  ctx.lineWidth = lineWidth;
+  ctx.strokeStyle = 'orange';
+  ctx.fillStyle = 'rgba(33, 33, 33, 1)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function resize() {
+  if (replaying) {
+    location.reload();
+  } else {
+    init();
+  }
+}
 
 const onClick = () => {
   if (!replaying && line.length > 2) return;
