@@ -1,19 +1,35 @@
-export function encode(lines) {
+export function encode(lines, { width, height }) {
   if (lines.length === 0) return '';
-  return JSON.stringify(lines)
+
+  // const r = 99 / Math.max(width, height);
+  const r = 1;
+  const normalizedLines = lines.map((line) => line.map((p) => p.map((v) => Math.round(v * r))));
+
+  return JSON.stringify([Math.round(r * width), Math.round(r * height)].concat(normalizedLines))
     .replace(/\[/g, 'a')
     .replace(/\]/g, 'b')
     .replace(/,/g, 'c');
 }
 
-export function decode(str) {
+export function decode(str, { width, height }) {
   if (str.length <= 1) return [];
-  return JSON.parse(
+  const [decodedWidth, decodedHeight, ...lines] = JSON.parse(
     str
       .slice(1)
       .replace(/a/g, '[')
       .replace(/b/g, ']')
       .replace(/c/g, ','),
+  );
+
+  const ratio = Math.min(width / decodedWidth, height / decodedHeight);
+  const widthOffset = Math.round((width - decodedWidth * ratio) / 2);
+  const heightOffset = Math.round((height - decodedHeight * ratio) / 2);
+
+  return lines.map((line) =>
+    line.map(([x, y]) => [
+      widthOffset + Math.round(ratio * x),
+      heightOffset + Math.round(ratio * y),
+    ]),
   );
 }
 

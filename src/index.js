@@ -32,22 +32,30 @@ let isMouseDown = false;
 let line = [];
 let lastClick = 0;
 
+const linesToReplay = decode(window.location.hash, canvas);
+let replaying = true;
+let hash = window.location.hash;
+
+let nextAction = 0;
+
+const onClick = () => {
+  if (!replaying && line.length > 2) return;
+  const dblClickTime = Date.now() - lastClick;
+  lastClick = Date.now();
+  if (dblClickTime < 300) {
+    window.location.hash = '';
+    location.reload();
+  }
+};
+
+canvas.addEventListener('mouseup', onClick);
+canvas.addEventListener('touchend', withTouch(onClick));
+
 const stopDrawing = () => {
   if (isMouseDown) {
     isMouseDown = false;
     if (line.length === 1) {
       line.push(line[0]);
-
-      const dblClickTime = Date.now() - lastClick;
-      lastClick = Date.now();
-      if (dblClickTime < 300) {
-        lines.length = [];
-        line = [];
-        ctx.save();
-        ctx.fillStyle = 'rgba(33, 33, 33, 1)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.restore();
-      }
     }
   }
 };
@@ -83,9 +91,6 @@ function withTouch(fn) {
   };
 }
 
-const linesToReplay = decode(window.location.hash);
-let replaying = true;
-
 function listenToInput() {
   canvas.addEventListener('mousedown', withMouse(startDrawing));
   canvas.addEventListener('mousemove', withMouse(drawLine));
@@ -94,9 +99,19 @@ function listenToInput() {
   canvas.addEventListener('touchstart', withTouch(startDrawing));
   canvas.addEventListener('touchmove', withTouch(drawLine));
   canvas.addEventListener('touchend', withTouch(stopDrawing));
+
+  setInterval(() => {
+    window.location.hash = encode(lines, canvas);
+    hash = window.location.hash;
+  }, 300);
 }
 
-let nextAction = 0;
+window.addEventListener('hashchange', (e) => {
+  if (window.location.hash !== hash) {
+    location.reload();
+  }
+});
+
 function replayLines() {
   if (!replaying) return;
   if (linesToReplay.length === 0) {
@@ -151,7 +166,3 @@ function draw() {
 
   window.requestAnimationFrame(draw);
 }
-
-setInterval(() => {
-  window.location.hash = encode(lines);
-}, 200);
