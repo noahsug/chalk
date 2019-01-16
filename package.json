@@ -8,7 +8,7 @@
     "start": "npm run build:dev && webpack-dev-server --content-base dist",
     "deploy": "npm run build && gh-pages-deploy",
     "test": "BABEL_ENV=test jest",
-    "lint": "eslint --quiet . --ext=.js"
+    "lint": "eslint --quiet src/ --ext=.js"
   },
   "author": "Noah Sugarman <noahsug@gmail.com>",
   "repository": {
