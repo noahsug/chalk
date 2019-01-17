@@ -20,7 +20,7 @@ let isMouseDown = false;
 let line = [];
 let lastClick = 0;
 
-const linesToReplay = decode(window.location.hash, canvas);
+const linesToReplay = decode(window.location.hash.slice(1), canvas);
 let replaying = true;
 let hash = window.location.hash;
 let updateHashInterval = 0;
@@ -91,7 +91,7 @@ function shortenLine(line) {
       const d3 = distance(p, p3);
       const projectedX = p[0] + (p3[0] - p[0]) * (d2 / d3);
       const projectedY = p[1] + (p3[1] - p[1]) * (d2 / d3);
-      if (distance([projectedX, projectedY], p2) > 20) {
+      if (d3 < d2 || distance([projectedX, projectedY], p2) > 5) {
         deslopedLine.push(reducedLine[i - 1]);
         lastAdded = i - 1;
         break;
@@ -123,6 +123,7 @@ const startDrawing = (newX, newY) => {
   line = [[x, y]];
   lines.push(line);
 };
+
 const drawLine = (newX, newY) => {
   if (isMouseDown) {
     ctx.beginPath();
@@ -144,6 +145,7 @@ function withMouse(fn) {
 function withTouch(fn) {
   return (e) => {
     e.preventDefault();
+    e.stopPropagation();
     const { pageX, pageY } = e.changedTouches[0];
     fn(pageX, pageY);
   };
@@ -159,6 +161,7 @@ function listenToInput() {
   canvas.addEventListener('touchend', withTouch(stopDrawing));
 
   updateHashInterval = setInterval(() => {
+    if (isMouseDown) return;
     window.location.hash = encode(lines, canvas);
     hash = window.location.hash;
   }, 300);
