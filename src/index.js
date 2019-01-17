@@ -62,28 +62,53 @@ canvas.addEventListener('mouseup', onClick);
 canvas.addEventListener('touchend', withTouch(onClick));
 
 function distance([x, y], [x2, y2]) {
-  return (x2 - x) * (x2 - x) + (y2 - y) * (y2 - y);
+  return Math.sqrt((x2 - x) * (x2 - x) + (y2 - y) * (y2 - y));
+}
+
+function slope([x, y], [x2, y2]) {
+  const m = (y - y2) / (x - x2);
 }
 
 function shortenLine(line) {
   if (line.length === 1) return;
-  const newLine = [line[0]];
-  for (let i = 1; i < line.length; i++) {
-    const p = newLine[newLine.length - 1];
+  const reducedLine = [line[0]];
+  for (let i = 1; i < line.length; i += 1) {
+    const p = reducedLine[reducedLine.length - 1];
     const p2 = line[i];
-    if (distance(p, p2) > 500) {
-      newLine.push(p2);
+    if (distance(p, p2) > 20) {
+      reducedLine.push(p2);
     }
   }
-  if (distance(line[0], line[line.length - 1]) > 100) {
-    if (newLine.length === 1) {
-      newLine.push(line[line.length - 1]);
+
+  const deslopedLine = [reducedLine[0]];
+  let lastAdded = 0;
+  for (let i = 2; i < reducedLine.length; i += 1) {
+    for (let j = lastAdded + 1; j < i; j += 1) {
+      const p = deslopedLine[deslopedLine.length - 1];
+      const p2 = reducedLine[j];
+      const p3 = reducedLine[i];
+      const d2 = distance(p, p2);
+      const d3 = distance(p, p3);
+      const projectedX = p[0] + (p3[0] - p[0]) * (d2 / d3);
+      const projectedY = p[1] + (p3[1] - p[1]) * (d2 / d3);
+      if (distance([projectedX, projectedY], p2) > 20) {
+        deslopedLine.push(reducedLine[i - 1]);
+        lastAdded = i - 1;
+        break;
+      }
+    }
+  }
+  deslopedLine.push(reducedLine[reducedLine.length - 1]);
+
+  if (distance(line[0], line[line.length - 1]) > 10) {
+    if (deslopedLine.length === 1) {
+      deslopedLine.push(line[line.length - 1]);
     } else {
-      newLine[newLine.length - 1] = line[line.length - 1];
+      deslopedLine[deslopedLine.length - 1] = line[line.length - 1];
     }
   }
-  lines[lines.length - 1] = newLine;
-  console.log(line.length - newLine.length);
+
+  lines[lines.length - 1] = deslopedLine;
 }
 
 const stopDrawing = () => {
