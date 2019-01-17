@@ -1,8 +1,7 @@
 export function encode(lines, { width, height }) {
   if (lines.length === 0) return '';
 
-  // const r = 99 / Math.max(width, height);
-  const r = 1;
+  const r = 127 / Math.max(width, height);
   const normalizedLines = lines.map((line) => line.map((p) => p.map((v) => Math.round(v * r))));
 
   return JSON.stringify([Math.round(r * width), Math.round(r * height)].concat(normalizedLines))

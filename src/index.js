@@ -61,12 +61,35 @@ const onClick = () => {
 canvas.addEventListener('mouseup', onClick);
 canvas.addEventListener('touchend', withTouch(onClick));
 
+function distance([x, y], [x2, y2]) {
+  return (x2 - x) * (x2 - x) + (y2 - y) * (y2 - y);
+}
+
+function shortenLine(line) {
+  if (line.length === 1) return;
+  const newLine = [line[0]];
+  for (let i = 1; i < line.length; i++) {
+    const p = newLine[newLine.length - 1];
+    const p2 = line[i];
+    if (distance(p, p2) > 500) {
+      newLine.push(p2);
+    }
+  }
+  if (distance(line[0], line[line.length - 1]) > 100) {
+    if (newLine.length === 1) {
+      newLine.push(line[line.length - 1]);
+    } else {
+      newLine[newLine.length - 1] = line[line.length - 1];
+    }
+  }
+  lines[lines.length - 1] = newLine;
+  console.log(line.length - newLine.length);
+}
+
 const stopDrawing = () => {
   if (isMouseDown) {
     isMouseDown = false;
-    if (line.length === 1) {
-      line.push(line[0]);
-    }
+    shortenLine(line);
   }
 };
 const startDrawing = (newX, newY) => {
@@ -148,7 +171,17 @@ function replayLines() {
   }
 }
 
-window.requestAnimationFrame(draw);
+function drawLineSegment([x, y], i) {
+  x += fillWidth / 2 - Math.random() * fillWidth;
+  y += fillWidth / 2 - Math.random() * fillWidth;
+  if (i !== 0) {
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  }
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+}
+
 function draw() {
   replayLines();
 
@@ -161,18 +194,11 @@ function draw() {
   lines.forEach((line, i) => {
     const rgb = [211, 211, 211];
     ctx.strokeStyle = `rgb(${rgb.join(',')})`;
-    line.forEach(([x, y], i) => {
-      x += fillWidth / 2 - Math.random() * fillWidth;
-      y += fillWidth / 2 - Math.random() * fillWidth;
-      if (i !== 0) {
-        ctx.lineTo(x, y);
-        ctx.stroke();
-      }
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-    });
+    line.forEach(drawLineSegment);
+    if (line.length === 1) drawLineSegment(line[0], 1);
   });
   ctx.restore();
 
   window.requestAnimationFrame(draw);
 }
+window.requestAnimationFrame(draw);
